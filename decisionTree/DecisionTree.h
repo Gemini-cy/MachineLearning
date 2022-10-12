@@ -36,9 +36,55 @@ private:
     Node* CreateTree(TrainData data, vector<int> usedAttr);    //ID3算法生成树
     int MostNormalOutput(TrainData data);    //计算所有训练样本的类别数，并返回数量最多的种类
     int Best(TrainData data, vector<int> usedAttr);    //计算信息增益最高的属性
+    double Entropy(TrainData data);    //计算经验熵
 public:
-
+    Tree();    //构造函数
+    void GetOutput();    //输入一个案例，获得输出
 };
+
+
+//Tree的类构造函数
+Tree::Tree(){
+    /*输入属性列表，输入每个属性的分类属性个数即可*/
+    int stop=0, num=0;
+    while(!stop){
+        vector<int> temp;
+        cout<< "Attribute" << "[" << num << "]" << ":";
+        int aa;
+        cin>>aa;
+        for(int i=0;i<aa;i++){
+            temp.push_back(i);
+        }
+        AttrData.push_back(temp);
+        cout<<"Stop?"<<endl;
+        cin>>stop;
+        num++;
+    }
+
+    /*输入训练数据，直接按顺序输入分类属性序号*/
+    TrainData data;
+    stop = 0;
+    while(!stop){
+        vector<int> train;
+        cout<<"TrainData:";
+        int aa = 0;
+        for(unsigned int i=0;i<AttrData.size();i++){
+            cin>>aa;
+            train.push_back(aa);
+        }
+        cout<<"Output:";
+        int aaa;
+        cin>>aaa;
+        data.InsertData(train, aaa);
+        cout<<"Stop?"<<endl;
+        cin>>stop;
+    }
+
+    vector<int> temp2;
+    root = CreateTree(data, temp2);
+    cout<<"Training......."<<endl;
+}
+
 
 //构建决策树
 Node* Tree::CreateTree(TrainData data, vector<int> usedAttr){
@@ -64,8 +110,28 @@ Node* Tree::CreateTree(TrainData data, vector<int> usedAttr){
 
     /*3.选出信息增益最高的属性（特征）作为节点；
         计算A中各特征对D的信息增益，选择信息增益最大的特征Ag*/
+    int A = Best(data, usedAttr);
+    usedAttr.push_back(A);    //加入已使用的属性
+    root->Attribute = A;
 
-
+    /*递归的在每个分类属性下新建一棵树*/
+    for(unsigned int i=0;i<AttrData[A].size();i++){
+        /*对Ag的每一个可能值ai,依Ag=ai将D分割为若干非空子集Di，
+          将Di中实例数最大的类作为标记，构建子结点，由结点及其子结点构成树T，返回T*/
+        TrainData tempExample;
+        //遍历每个样本
+        for(unsigned int j=0;j<data.Output.size();j++){
+            if(i==data.Input[j][A]){
+                tempExample.InsertData(data.Input[j],data.Output[j]);
+            }
+        }
+        if(tempExample.Output.empty()){
+            root->Num.push_back(new Node(MostNormalOutput(data),1));
+        }else{
+            root->Num.push_back(CreateTree(tempExample, usedAttr));
+        }
+    }
+    return root;
 }
 
 
@@ -111,11 +177,47 @@ int Tree::MostNormalOutput(TrainData data){
 }
 
 
-/*********************************************
- *********************************************
- **************待完成部分在下面***************
- *********************************************
- ******************************************* */
+
+
+//计算经验熵
+double Tree::Entropy(TrainData data){
+    /*1.计算输出种类和数量*/
+    vector<double> out;
+    vectoe<double> count;
+    for(unsigned int i=0;i<data.Output.size();i++){
+        bool ex = 0;    //判断是否存在
+        int index = 0;
+        for(unsigned int j=0;j<out.size();j++){
+            if(out[j]==data.Output[i]){
+                //说明此时已有该种类
+                ex = 1;
+                index = j;
+            }
+        }
+        if(ex){
+            count[index]++;
+        }
+        else{
+            out.push_back(data.Output[i]);
+            count.push_back(1);
+        }
+    }
+
+    /*2.计算信息熵*/
+    double total=0;
+    for(unsigned int i=0;i<count.size();i++){
+        total = count[i];
+    }
+    double sum = 0;
+    for(unsigned int i=0;i<count.size();i++){
+        double a=0;
+        if((count[i]/total)!=0){
+            a = log2((count[i]/total));
+        }
+        sum -= (count[i]/total)*a;
+    }
+    return sum;
+}
 
 
 //计算信息增益
@@ -123,9 +225,68 @@ int Tree::Best(TrainData data, vector<int> usedAttr){
     vector<double> Gain;    //记录每一个属性的信息增益
     bool used;
     /*将使用过的属性的信息增益设置为0*/
+    for(unsigned int i=0;i<AttrData.size();i++){
+        used=0;
+        for(unsigned int k=0;k<usedAttr.size();k++){
+            if(i==usedAttr[k]){
+                Gain.push_back(0.0);
+                used=1;
+            }
+        }
+        if(used) continue;
+        else{
+            /*计算信息增益*/
+            double es = Entropy(data);
+            //计算每一个特征的信息增益
+            for(unsigned int j=0;j<AttrData[i].size();j++){
+                TrainData tempData;    //根据特征A的取值将D划分为几个子集，这是其中一个子集的数据
+                //遍历每一个样本
+                for(unsigned int k=0;k<data.Input.size();k++){
+                    if(j==data.Input[k][i]){
+                        tempData.InsertData(data.Input[k], data.Output[k]);
+                    }
+                }
+                if(!tempData.Input.empty()){
+                    es -= (double(tempData.Input.size())/double(data.Input.size()))*Entropy(tempData)
+                }
+            }
+            Gain.push_back(es);
+        }
+    }
+
+    /*计算信息增益最高的属性*/
+    int maxIndex = 0;
+    double maxGain = 0;
+    for(unsigned int i=0;i<Gain.size();i++){
+        if(Gain[i]>maxGain){
+            maxIndex = i;
+            maxGain = Gain[i];
+        }
+    }
+    return maxIndex;
 
 }
 
+
+//输出
+void Tree::GetOutput(){
+    vector<int> data;
+    cout<<"TestData:";
+    int aa = 0;
+    for(unsigned int i=0;i<AttrData.size();i++){
+        cin>>aa;
+        data.push_back(aa);
+    }
+    if(root->IsLeaf){
+        cout << "Output:" << root->Attribute << endl;
+        return;
+    }
+    Node* current = root->Num[data[root->Attribute]];
+    while(!current->IsLeaf){
+        current = current->Num[data[current->Attribute]];
+    }
+    cout<< "Output:" << current->Attribute <<endl;
+}
 
 
 #endif
