@@ -183,7 +183,7 @@ int Tree::MostNormalOutput(TrainData data){
 double Tree::Entropy(TrainData data){
     /*1.计算输出种类和数量*/
     vector<double> out;
-    vectoe<double> count;
+    vector<double> count;
     for(unsigned int i=0;i<data.Output.size();i++){
         bool ex = 0;    //判断是否存在
         int index = 0;
@@ -247,7 +247,7 @@ int Tree::Best(TrainData data, vector<int> usedAttr){
                     }
                 }
                 if(!tempData.Input.empty()){
-                    es -= (double(tempData.Input.size())/double(data.Input.size()))*Entropy(tempData)
+                    es -= (double(tempData.Input.size())/double(data.Input.size()))*Entropy(tempData);
                 }
             }
             Gain.push_back(es);
