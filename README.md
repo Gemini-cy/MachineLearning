@@ -8,6 +8,6 @@
 
 2.朴素贝叶斯法（NaiveBayes）
 
-2.决策树（DecisionTree）
+3.决策树（DecisionTree）
 
 
