@@ -6,6 +6,8 @@
 
 1.k近邻法（KNearestNeighbors）
 
+2.朴素贝叶斯法（NaiveBayes）
+
 2.决策树（DecisionTree）
 
 
