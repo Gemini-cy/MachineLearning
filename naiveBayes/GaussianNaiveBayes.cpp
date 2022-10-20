@@ -17,7 +17,7 @@ void add_feature(std::vector<std::vector<double>> &feature_data, const std::vect
 }
 
 
-std::vector<double> calculate_mean(std::vector<vector<double>> feature_data){
+std::vector<double> calculate_mean(std::vector<std::vector<double>> feature_data){
     //计算每个属性的均值
     std::vector<double> mean_values(NUM_FEATURES);
     size_t num_elements = feature_data.size();
@@ -62,7 +62,7 @@ double calculate_prob(std::vector<double> feature_data, std::vector<double> mean
         double mean = means[i];    //均值
         double sigma = stddev[i];    //标准差
 
-        temp_var = (1/(sigma*std::sqrt(2*std::M_PI)))*exp(-0.5*std::pow((x-mean)/sigma,2));
+        temp_var = (1/(sigma*std::sqrt(2*M_PI)))*exp(-0.5*std::pow((x-mean)/sigma,2));
         pdf_gaussian *= temp_var;
     }
     return pdf_gaussian;
