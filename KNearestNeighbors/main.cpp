@@ -59,30 +59,30 @@ std::pair<std::vector<Data>, std::vector<Data>> split_data(std::vector<Data> dat
 
 void normalize(std::vector<Data> data){
     //正则化特征数据
-    double max = std::numeric_limits<double>::max()    //返回当前系统可取的最大double值
-    double min = std::numeric_limits<double>::min()    //返回当前系统可取的最小double值
-    double *mins = new double[data[0].size()];    //记录所有样本每类特征的最小值
-    double *maxss = new double[data[0].size()];    //记录所有样本每类特征的最大值
-    std::fill_n(mins,data[0].size(),max);
-    std::fill_n(maxes,data[0].size(),min);
+    double max = std::numeric_limits<double>::max();    //返回当前系统可取的最大double值
+    double min = std::numeric_limits<double>::min();    //返回当前系统可取的最小double值
+    double *mins = new double[data[0].size];    //记录所有样本每类特征的最小值
+    double *maxes = new double[data[0].size];    //记录所有样本每类特征的最大值
+    std::fill_n(mins,data[0].size,max);
+    std::fill_n(maxes,data[0].size,min);
 
     //遍历样本记录mins和maxes
     for(auto sample:data){
-        for(size_t i=0;i<sample.size();i++){
+        for(size_t i=0;i<sample.size;i++){
             if(sample.fields[i]>maxes[i]){
                 //更新最大值
-                maxes[i] = sample.fields;
+                maxes[i] = sample.fields[i];
             }
             if(sample.fields[i]<mins[i]){
                 //更新最小值
-                mins[i] = sample.fields;
+                mins[i] = sample.fields[i];
             }
         }
     }
 
     //进行归一化操作
     for(auto sample:data){
-        for(size_t i=0;i<sample.size();i++){
+        for(size_t i=0;i<sample.size;i++){
             sample.fields[i] = (sample.fields[i]-mins[i])/(maxes[i]-mins[i]);
         }
     }
@@ -104,7 +104,7 @@ void run_knn(std::vector<Data> test, std::vector<Data> training, size_t k){
             correct++;
         }
     }
-    std::out << correct << " of " << test.size() << "(" << static_cast<double>(100.0) *correct/static_cast<double>(test.size()) << ")" <<std::endl;
+    std::cout << correct << " of " << test.size() << "(" << static_cast<double>(100.0) *correct/static_cast<double>(test.size()) << ")" <<std::endl;
 }
 
 
