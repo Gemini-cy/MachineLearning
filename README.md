@@ -12,4 +12,6 @@
 
 4.决策树（DecisionTree）
 
+5.逻辑斯蒂回归（Logistic Regression）
+
 
