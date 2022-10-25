@@ -39,22 +39,21 @@ void Perceptron::init(int size){
 }
 
 //根据当前样本的值进行分类
-bool Perceptron::classifier(std::vector<double> inputs){
+int Perceptron::classifier(std::vector<double> inputs){
     //对当前样本进行分类
     //计算当前样本的wx+b
     double weight_sum = 0;
     for(int i=0;i<inputs.size();i++){
-        weight_sum = inputs[i]*this->weights[i];
+        weight_sum += inputs[i]*this->weights[i];
     }
     //激活函数sign
-    int label;
-    label = weight_sum>=0?1:-1;
-    return label==1?true:false;
+    int label = weight_sum>=0?1:-1;
+    return label;
 }
 
 
 //训练过程
-void Perceptron::train(std::vector<std::pair<std::vector<double>, bool>> train_dataset){
+void Perceptron::train(std::vector<std::pair<std::vector<double>, int>> train_dataset){
     bool is_finished = false;    //判断当前训练集的样本点是否全部被正确分类
     //直到训练集里样本可以全部正确分类停止
     while(!is_finished){
@@ -64,30 +63,29 @@ void Perceptron::train(std::vector<std::pair<std::vector<double>, bool>> train_d
             std::vector<double> input_data;
             input_data.assign(sample_data.first.begin(),sample_data.first.end());
             input_data.push_back(1);    //添加bias
-            bool true_label = sample_data.second;
+            int true_label = sample_data.second;
             //对当前未更新样本进行判断
-            bool predict_label = this->classifier(input_data);
-            if(true_label==predict_label){
+            int predict_label = this->classifier(input_data);
+            if(true_label*predict_label>0){
                 continue;
             }
             //根据误分类样本信息对权重进行更新--梯度下降
             is_finished = false;
             for(int i=0;i<this->weights.size();i++){
-                double error = true_label - predict_label;    //+1 或 -1,将bool标签区间转化为{+1，-1}
-                this->weights[i] += this->lr*error*input_data[i];    // w <----- w+n*y*x
+                this->weights[i] += this->lr*true_label*input_data[i];    // w <----- w+n*y*x
             }
         }        
     }
 }
 
 //预测分类函数
-bool Perceptron::predict(std::vector<double> data){
+int Perceptron::predict(std::vector<double> data){
     data.push_back(1);    //加入bias
     double sum = 0;
     for(int i=0;i<this->weights.size();i++){
         sum += this->weights[i]*data[i];
     }
-    bool label = sum>=0?true:false;
+    int label = sum>=0?1:-1;
     return label;
 }
 
